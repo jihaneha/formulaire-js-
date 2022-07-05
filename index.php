@@ -1,24 +1,56 @@
 <?php
-if(!empty($_POST)){
 session_start();
+// require 'profil.php';
+
+if(!empty($_POST)){
+
 $serveur = "localhost"; 
 $dbname = "users"; 
 $user = "root"; 
 $pass = "";
-    
-$username= valid_donnees($_POST["username"]);
-$mail = valid_donnees($_POST["mail"]);
-$password = valid_donnees($_POST["password"]);
-$password2 = valid_donnees($_POST["password2"]);
-
+// fonction pour filtrer les donnees 
 function valid_donnees($donnees){
     $donnees = trim($donnees);
     $donnees = stripslashes($donnees);
+    $donnees = strip_tags($donnees);
     $donnees = htmlspecialchars($donnees);
     return $donnees;
 }
-}
+// récupération des données 
+$username= valid_donnees($_POST["username"]);
+$mail = valid_donnees($_POST["email"]);
+$password = valid_donnees($_POST["password"]);
+$password2 = valid_donnees($_POST["password2"]);
 
+
+//connexion a la base de données 
+
+try{
+    $connexion=new PDO("mysql:host=$serveur;dbname=$dbname",$user,$pass);
+    $connexion-> setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // echo "connexion à la base de données réussie";
+    $requete =$connexion->prepare("INSERT INTO users(nom,motdepasse,email)
+                            VALUES (:nom,:motdepasse,:email)" 
+                            );
+    $requete->bindParam(':nom', $username);
+    $requete->bindParam(':motdepasse', $password);
+    $requete->bindParam(':email', $mail);
+    $requete->execute();
+    
+}
+catch(PDOException $e){
+    echo "Echec de la connexion : ".$e->getMessage();
+}
+// verifier si l'adresse email existe 
+
+
+
+
+
+
+
+
+}
 ?>
 
 <!DOCTYPE html>
@@ -40,7 +72,7 @@ function valid_donnees($donnees){
         <form id="form" class="form" action="#" method="POST">
             <div class="form-control">
                 <label for="username">Username</label>
-                <input type="text" placeholder="jijiha" id="username" />
+                <input type="text" placeholder="jijiha" id="username" name="username">
                 <i class="fas fa-check-circle"></i>
                 <i class="fas fa-exclamation-circle"></i>
                 <small>Error message</small>
@@ -112,7 +144,7 @@ function valid_donnees($donnees){
     </button>
 
     
-    <script src="script.js"></script>
+    <!-- <script src="script.js"></script> -->
     
 </body>
 </html>
